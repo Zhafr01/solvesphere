@@ -1,0 +1,65 @@
+
+  Dropping all tables  208.30ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table  28.29ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table  90.38ms DONE
+  0001_01_01_000001_create_cache_table  26.19ms DONE
+  0001_01_01_000002_create_jobs_table  72.69ms DONE
+  2025_11_19_041530_create_reports_table  65.71ms DONE
+  2025_11_19_041534_create_forum_topics_table  60.47ms DONE
+  2025_11_19_041538_create_forum_comments_table  147.55ms DONE
+  2025_11_19_041544_create_news_table  105.80ms DONE
+  2025_11_25_093301_create_partners_table  28.99ms DONE
+  2025_11_25_094103_add_urgency_to_reports_table  9.82ms DONE
+  2025_11_25_094613_add_partner_id_to_news_table  56.90ms DONE
+  2025_11_25_094829_add_status_to_users_table  9.43ms DONE
+  2025_11_25_095443_add_status_to_forum_topics_table  11.06ms DONE
+  2025_11_25_095844_add_best_answer_id_to_forum_topics_table  62.46ms DONE
+  2025_11_25_100058_create_comment_likes_table  136.76ms DONE
+  2025_11_25_101142_add_profile_picture_to_users_table  9.62ms DONE
+  2025_11_26_142430_create_notifications_table  29.48ms DONE
+  2025_11_26_142600_add_partner_id_to_users_table  54.35ms DONE
+  2025_11_27_210110_change_logo_column_in_partners_table  8.45ms DONE
+  2025_11_27_210947_add_description_and_status_to_partners_table  17.77ms DONE
+  2025_11_27_212543_change_profile_picture_to_longtext_in_users_table  55.09ms DONE
+  2025_11_27_231645_add_slug_to_partners_table  24.49ms DONE
+  2025_11_28_084603_add_partner_id_to_content_tables  127.17ms DONE
+  2025_11_28_090616_create_messages_table  171.19ms DONE
+  2025_11_28_091648_add_website_to_partners_table  12.31ms DONE
+  2025_11_28_123000_create_personal_access_tokens_table  45.18ms DONE
+  2025_11_30_050831_create_friends_table  137.00ms DONE
+
+
+   INFO  Seeding database.  
+
+  Database\Seeders\PlatformSeeder  RUNNING  
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[01000]: Warning: 1265 Data truncated for column 'status' at row 1 (Connection: mysql, SQL: insert into `forum_topics` (`user_id`, `title`, `content`, `category`, `status`, `partner_id`, `updated_at`, `created_at`) values (4, Sapiente mollitia ex nulla deleniti earum., Explicabo saepe debitis possimus eos sed repudiandae est voluptas. Ex alias enim architecto sit ad quae possimus. Consequuntur quam praesentium dignissimos dolores porro ducimus. A quidem aut quia. Rerum sit blanditiis itaque non., General, open, 2, 2025-11-30 05:26:18, 2025-11-30 05:26:18))
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:824
+    820▕                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    821▕                 );
+    822▕             }
+    823▕ 
+  ➜ 824▕             throw new QueryException(
+    825▕                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826▕             );
+    827▕         }
+    828▕     }
+
+      [2m+16 vendor frames [22m
+
+  17  database/seeders/PlatformSeeder.php:81
+      Illuminate\Database\Eloquent\Factories\Factory::create()
+      [2m+8 vendor frames [22m
+
+  26  database/seeders/DatabaseSeeder.php:18
+      Illuminate\Database\Seeder::call()
+

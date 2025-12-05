@@ -1,0 +1,23 @@
+
+> build
+> vite build
+
+vite v7.2.2 building client environment for production...
+transforming...
+✓ 32 modules transformed.
+✗ Build failed in 4.63s
+error during build:
+[vite]: Rollup failed to resolve import "@headlessui/react" from "/home/zhafr/pemweb/TA/resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteLog (file:///home/zhafr/pemweb/TA/node_modules/vite/dist/node/chunks/config.js:34254:57)
+    at file:///home/zhafr/pemweb/TA/node_modules/vite/dist/node/chunks/config.js:34288:73
+    at onwarn (file:///home/zhafr/pemweb/TA/node_modules/@vitejs/plugin-react/dist/index.js:76:7)
+    at file:///home/zhafr/pemweb/TA/node_modules/vite/dist/node/chunks/config.js:34288:28
+    at onRollupLog (file:///home/zhafr/pemweb/TA/node_modules/vite/dist/node/chunks/config.js:34283:63)
+    at onLog (file:///home/zhafr/pemweb/TA/node_modules/vite/dist/node/chunks/config.js:34086:4)
+    at file:///home/zhafr/pemweb/TA/node_modules/rollup/dist/es/shared/node-entry.js:20961:32
+    at Object.logger [as onLog] (file:///home/zhafr/pemweb/TA/node_modules/rollup/dist/es/shared/node-entry.js:22848:9)
+    at ModuleLoader.handleInvalidResolvedId (file:///home/zhafr/pemweb/TA/node_modules/rollup/dist/es/shared/node-entry.js:21592:26)
+    at file:///home/zhafr/pemweb/TA/node_modules/rollup/dist/es/shared/node-entry.js:21550:26
