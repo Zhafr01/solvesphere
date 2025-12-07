@@ -30,28 +30,6 @@ class UserController extends Controller
     {
         $query = User::withoutGlobalScope(\App\Scopes\PartnerScope::class)
             ->with('partner')
-            ->where(function ($q) {
-                // 1. Global Users (Main Web Users)
-                $q->whereNull('partner_id')
-                // 2. OR Partner Users who have interacted with Global/Main Web content
-                  ->orWhere(function ($sub) {
-                      $sub->whereNotNull('partner_id')
-                          ->where(function ($interaction) {
-                              // Has created a global topic
-                              $interaction->whereHas('forumTopics', function ($t) {
-                                  $t->whereNull('partner_id');
-                              })
-                              // OR Has created a global report
-                              ->orWhereHas('reports', function ($r) {
-                                  $r->whereNull('partner_id');
-                              })
-                              // OR Has commented on a global topic
-                              ->orWhereHas('forumComments.topic', function ($ct) {
-                                  $ct->whereNull('partner_id');
-                              });
-                          });
-                  });
-            })
             ->latest();
 
         if ($request->filled('search')) {
@@ -66,7 +44,7 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->paginate(10);
+        $users = $query->paginate(100);
 
         return response()->json($users);
     }

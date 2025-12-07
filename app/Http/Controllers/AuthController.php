@@ -45,7 +45,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', \App\Helpers\PasswordHelper::getValidationRules()],
         ]);
 
         $user = new User([
@@ -125,6 +125,12 @@ class AuthController extends Controller
                 : 'Your account is banned.';
             
             return response()->json(['message' => $errorMessage], 403);
+        }
+
+        // Check Maintenance Mode
+        $isMaintenance = \App\Models\Setting::where('key', 'maintenance_mode')->value('value') === '1';
+        if ($isMaintenance && $user->role !== 'super_admin') {
+            return response()->json(['message' => 'System is currently in maintenance mode.'], 503);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

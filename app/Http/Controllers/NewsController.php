@@ -76,7 +76,7 @@ class NewsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image',// Removed max size limit
             'partner_id' => 'nullable|exists:partners,id',
         ]);
         
@@ -195,7 +195,7 @@ class NewsController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image',// Removed max size limit
         ]);
 
         $news->title = $request->title;
@@ -271,6 +271,11 @@ class NewsController extends Controller
             $news->likes()->attach($user->id);
             $liked = true;
             $message = 'News liked successfully';
+
+            // Notify news author if not self
+            if ($news->admin_id !== $user->id) {
+                $news->admin->notify(new \App\Notifications\NewLikeNotification($user, 'news', $news));
+            }
         }
 
         return response()->json([

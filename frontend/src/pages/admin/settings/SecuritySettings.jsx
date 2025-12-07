@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../../lib/api';
 import { Save, ArrowLeft, Shield, Key, Clock, Lock, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +12,27 @@ export default function SecuritySettings() {
         requireSpecialChar: true
     });
 
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await api.get('/settings?group=security');
+            const data = response.data;
+            if (data && Object.keys(data).length > 0) {
+                setFormData({
+                    minPasswordLength: parseInt(data.minPasswordLength) || 8,
+                    sessionTimeout: parseInt(data.sessionTimeout) || 60,
+                    twoFactorAuth: data.twoFactorAuth === '1' || data.twoFactorAuth === true,
+                    requireSpecialChar: data.requireSpecialChar === '1' || data.requireSpecialChar === true
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch settings:", error);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -19,14 +41,18 @@ export default function SecuritySettings() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await api.post('/settings', { ...formData, group: 'security' });
             alert('Security settings saved successfully!');
-        }, 1000);
+        } catch (error) {
+            console.error("Failed to save settings:", error);
+            alert('Failed to save security settings.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const updateNumber = (name, delta, min, max) => {

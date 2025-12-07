@@ -120,7 +120,7 @@ export default function ForumIndex() {
                                         <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                                             {topic.category}
                                         </span>
-                                        {(user?.role === 'super_admin' || (user?.role === 'partner_admin' && user?.partner_id === topic.partner_id) || user?.id === topic.user_id) && (
+                                        {(user?.id === topic.user_id || (user?.role === 'super_admin' && !slug) || (user?.role === 'partner_admin' && user?.partner_id === topic.partner_id)) && (
                                             <button
                                                 onClick={() => handleDelete(topic.id)}
                                                 className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"

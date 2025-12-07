@@ -155,7 +155,7 @@ export default function NewsIndex() {
                                                     {newsItem.title}
                                                 </Link>
                                             </h2>
-                                            {['super_admin', 'partner_admin'].includes(user?.role) && (
+                                            {((user?.role === 'super_admin' && !slug) || user?.role === 'partner_admin') && (
                                                 <div className="flex items-center gap-2">
                                                     <Link
                                                         to={slug ? `/partners/${slug}/news/${newsItem.id}/edit` : `/news/${newsItem.id}/edit`}

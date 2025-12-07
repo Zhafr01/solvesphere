@@ -67,6 +67,17 @@ export default function PartnersIndex() {
         }
     };
 
+    const handleActivate = async (id) => {
+        if (!confirm('Are you sure you want to activate (unsuspend) this partner?')) return;
+        try {
+            await api.post(`/super-admin/partners/${id}/activate`);
+            fetchPartners(); // Refresh list
+        } catch (error) {
+            console.error("Failed to activate partner", error);
+            alert('Failed to activate partner');
+        }
+    };
+
     const handleSubscriptionUpdate = async (partnerId, status) => {
         if (!confirm(`Are you sure you want to mark this subscription as ${status}?`)) return;
         try {
@@ -79,7 +90,7 @@ export default function PartnersIndex() {
     };
 
     const filteredPartners = partners.filter(partner =>
-        activeTab === 'active' ? (partner.status === 'active' || partner.status === 'approved') : partner.status === 'pending'
+        activeTab === 'active' ? (partner.status === 'active' || partner.status === 'approved' || partner.status === 'inactive') : partner.status === 'pending'
     );
 
     if (loading) return <div>Loading partners...</div>;
@@ -140,7 +151,8 @@ export default function PartnersIndex() {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{partner.domain}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            ${(partner.status === 'active' || partner.status === 'approved') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                            ${(partner.status === 'active' || partner.status === 'approved') ? 'bg-green-100 text-green-800' :
+                                                partner.status === 'inactive' ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                             {partner.status}
                                         </span>
                                     </td>
@@ -229,6 +241,23 @@ export default function PartnersIndex() {
                                                 </button>
                                             </>
                                         )}
+                                        {/* Show activate button if inactive */}
+                                        {partner.status === 'inactive' && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleActivate(partner.id)}
+                                                    className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
+                                                >
+                                                    Activate
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(partner.id)}
+                                                    className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))
@@ -242,21 +271,23 @@ export default function PartnersIndex() {
             </div>
 
             {/* Image Modal */}
-            {selectedImage && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4" onClick={() => setSelectedImage(null)}>
-                    <div className="relative max-w-4xl max-h-full bg-white rounded-lg overflow-hidden shadow-xl" onClick={e => e.stopPropagation()}>
-                        <button
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 bg-white rounded-full p-1"
-                            onClick={() => setSelectedImage(null)}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                        <img src={selectedImage} alt="Payment Proof" className="max-w-full max-h-[80vh] object-contain" />
+            {
+                selectedImage && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4" onClick={() => setSelectedImage(null)}>
+                        <div className="relative max-w-4xl max-h-full bg-white rounded-lg overflow-hidden shadow-xl" onClick={e => e.stopPropagation()}>
+                            <button
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 bg-white rounded-full p-1"
+                                onClick={() => setSelectedImage(null)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <img src={selectedImage} alt="Payment Proof" className="max-w-full max-h-[80vh] object-contain" />
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

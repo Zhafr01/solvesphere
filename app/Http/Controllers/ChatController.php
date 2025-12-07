@@ -232,9 +232,16 @@ class ChatController extends Controller
      */
     public function store(Request $request, $otherUserId)
     {
+        if ($request->hasFile('image') && !$request->file('image')->isValid()) {
+             return response()->json([
+                 'message' => 'Image upload failed. The file is likely too large. Server limit: ' . ini_get('upload_max_filesize'),
+                 'errors' => ['image' => ['The file exceeds the server limit of ' . ini_get('upload_max_filesize')]]
+             ], 422);
+        }
+
         $request->validate([
             'message' => 'nullable|string',
-            'image' => 'nullable|image|max:51200', // 50MB max
+            'image' => 'nullable|image', // Removed max size limit
         ]);
 
         if (!$request->message && !$request->hasFile('image')) {

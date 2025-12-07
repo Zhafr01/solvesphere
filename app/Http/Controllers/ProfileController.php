@@ -113,12 +113,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
+        // For API, we revoke tokens instead of "logging out" a session
+        if ($user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        // If we want to revoke ALL tokens:
+        // $user->tokens()->delete();
 
         $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
 
         return response()->json(['message' => 'Account deleted successfully']);
     }
@@ -221,7 +224,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required', 'current_password'],
-            'new_password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'new_password' => ['required', 'confirmed', \App\Helpers\PasswordHelper::getValidationRules()],
             'verification_code' => ['required'],
         ]);
 

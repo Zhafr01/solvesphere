@@ -180,4 +180,47 @@ class UserManagementController extends Controller
 
         return response()->json(['message' => 'User banned successfully']);
     }
+    /**
+     * @OA\Post(
+     *     path="/api/partner-admin/users/{id}/promote",
+     *     summary="Promote a user to Partner Admin",
+     *     tags={"Partner Admin"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User promoted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function promote(User $user)
+    {
+        // Check if user is already a partner admin for this partner
+        if ($user->role === 'partner_admin' && $user->partner_id === Auth::user()->partner_id) {
+             return response()->json(['message' => 'User is already an admin for this partner'], 422);
+        }
+
+        // We allow promoting any 'general_user' (even if they have no partner_id, effectively recruiting them)
+        // OR a user already assigned to this partner.
+        // We should probably NOT steal users from other partners, but the query in index() filters those out anyway.
+        // Let's add a safety check just in case.
+        if ($user->partner_id && $user->partner_id !== Auth::user()->partner_id) {
+             return response()->json(['message' => 'User belongs to another partner'], 403);
+        }
+
+        $user->update([
+            'role' => 'partner_admin',
+            'partner_id' => Auth::user()->partner_id
+        ]);
+
+        return response()->json(['message' => 'User promoted to Partner Admin successfully']);
+    }
 }

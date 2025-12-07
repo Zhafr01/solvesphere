@@ -42,9 +42,15 @@ class NewLikeNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        $url = $this->type === 'topic' 
-            ? '/forum/' . $this->model->id 
-            : '/forum/' . $this->model->forum_topic_id;
+        if ($this->type === 'topic') {
+            $url = '/forum/' . $this->model->id;
+        } elseif ($this->type === 'comment') {
+            $url = '/forum/' . $this->model->forum_topic_id;
+        } elseif ($this->type === 'news') {
+            $url = '/news/' . $this->model->id;
+        } else {
+            $url = '#';
+        }
 
         return [
             'type' => 'new_like',

@@ -237,6 +237,11 @@ class SuperAdminController extends Controller
             Storage::disk('public')->delete($partner->logo);
         }
         
+        // Use query builder to bulk update users associated with this partner
+        \App\Models\User::withoutGlobalScope(\App\Scopes\PartnerScope::class)
+            ->where('partner_id', $partner->id)
+            ->update(['role' => 'general_user', 'partner_id' => null]);
+            
         $partner->delete();
 
         if (request()->wantsJson() && !request()->inertia()) {
@@ -339,6 +344,11 @@ class SuperAdminController extends Controller
             Storage::disk('public')->delete($partner->logo);
         }
         
+        // Use query builder to bulk update users associated with this partner
+        \App\Models\User::withoutGlobalScope(\App\Scopes\PartnerScope::class)
+            ->where('partner_id', $partner->id)
+            ->update(['role' => 'general_user', 'partner_id' => null]);
+
         $partner->delete();
 
         if (request()->wantsJson() && !request()->inertia()) {
@@ -382,6 +392,42 @@ class SuperAdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Partner suspended successfully');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/super-admin/partners/{id}/activate",
+     *     summary="Activate (Unsuspend) a partner",
+     *     tags={"Super Admin"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Partner activated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="partner", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function activate(Partner $partner)
+    {
+        $partner->update(['status' => 'active']);
+
+        if (request()->wantsJson() && !request()->inertia()) {
+            return response()->json([
+                'message' => 'Partner activated successfully',
+                'partner' => $partner
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Partner activated successfully');
     }
 
     /**

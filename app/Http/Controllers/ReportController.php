@@ -128,13 +128,7 @@ class ReportController extends Controller
 
         $reports = $query->with(['user', 'partner'])->latest()->paginate(10);
 
-        if ($request->wantsJson() && !$request->inertia()) {
-            return response()->json($reports);
-        }
-
-        return \Inertia\Inertia::render('Reports/Index', [
-            'reports' => $reports
-        ]);
+        return response()->json($reports);
     }
 
     public function store(Request $request)
@@ -149,7 +143,7 @@ class ReportController extends Controller
             'category' => 'required',
             'urgency' => 'required|in:Low,Medium,High,Critical',
             'content' => 'required',
-            'attachment' => 'nullable|file|mimes:jpg,png,pdf,doc,docx|max:2048',
+            'attachment' => 'nullable|file',// Removed max size limit
             'partner_id' => 'nullable|exists:partners,id',
         ]);
         
@@ -219,13 +213,7 @@ class ReportController extends Controller
 
         $report->load('user');
 
-        if (request()->wantsJson() && !request()->inertia()) {
-            return response()->json($report);
-        }
-
-        return \Inertia\Inertia::render('Reports/Show', [
-            'report' => $report
-        ]);
+        return response()->json($report);
     }
 
     /**
@@ -290,7 +278,7 @@ class ReportController extends Controller
                 'category' => 'required|string|max:255',
                 'urgency' => 'required|in:Low,Medium,High,Critical',
                 'content' => 'required|string',
-                'attachment' => 'nullable|file|mimes:jpg,png,pdf,doc,docx|max:2048',
+                'attachment' => 'nullable|file',// Removed max size limit
             ]);
             if ($request->hasFile('attachment')) {
                 $path = $request->file('attachment')->store('attachments', 'public');

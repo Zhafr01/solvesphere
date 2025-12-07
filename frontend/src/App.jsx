@@ -24,6 +24,8 @@ import SiteSettings from './pages/admin/settings/SiteSettings';
 import SecuritySettings from './pages/admin/settings/SecuritySettings';
 import NotificationSettings from './pages/admin/settings/NotificationSettings';
 import SystemMaintenance from './pages/admin/settings/SystemMaintenance';
+import SystemInfo from './pages/admin/settings/SystemInfo';
+import SystemDocs from './pages/admin/settings/SystemDocs';
 import PartnerAdminsIndex from './pages/admin/PartnerAdminsIndex';
 import ReportsIndex from './pages/reports/ReportsIndex';
 import CreateReport from './pages/reports/CreateReport';
@@ -49,6 +51,7 @@ import PartnerUsersIndex from './pages/admin/UsersIndex'; // Reusing UsersIndex 
 // Placeholder Pages
 import LandingPage from './pages/LandingPage';
 import NotFound from './pages/NotFound';
+import AboutUs from './pages/AboutUs';
 
 const ProtectedRoute = ({ children, roles = [] }) => {
   const { user, isLoading } = useAuth();
@@ -72,6 +75,7 @@ function App() {
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/partners/:slug" element={<PartnerSite />} />
+                  <Route path="/about-us" element={<AboutUs />} />
                 </Route>
 
                 {/* Guest Routes */}
@@ -208,6 +212,16 @@ function App() {
                       <SystemMaintenance />
                     </ProtectedRoute>
                   } />
+                  <Route path="/super-admin/settings/system-info" element={
+                    <ProtectedRoute roles={['super_admin']}>
+                      <SystemInfo />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/super-admin/settings/system-docs" element={
+                    <ProtectedRoute roles={['super_admin']}>
+                      <SystemDocs />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/partner-admin/admins" element={
                     <ProtectedRoute roles={['partner_admin']}>
                       <PartnerAdminsIndex />
@@ -322,12 +336,12 @@ function App() {
                   } />
                   <Route path="*" element={<NotFound />} />
                 </Route>
-              </Routes>
-            </PartnerProvider>
-          </Router>
-        </ThemeProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+              </Routes >
+            </PartnerProvider >
+          </Router >
+        </ThemeProvider >
+      </AuthProvider >
+    </ErrorBoundary >
   );
 }
 

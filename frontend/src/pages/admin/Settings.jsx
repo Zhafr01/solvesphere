@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Settings as SettingsIcon, Shield, Bell, Globe, Database } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Bell, Globe, Database, Info, Activity } from 'lucide-react';
 
 export default function Settings() {
     return (
@@ -54,7 +54,33 @@ export default function Settings() {
                             <p className="text-sm text-slate-500 dark:text-slate-400">View logs, clear cache, and system health.</p>
                             <Link to="/super-admin/settings/maintenance" className="inline-block mt-4 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">View Status</Link>
                         </div>
+
+
                     </div>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+                <div className="p-6 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <Activity className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">System Monitoring</h2>
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">View real-time server performance and health indicators.</p>
+                    </div>
+                    <Link to="/super-admin/settings/system-info" className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">View Monitor</Link>
+                </div>
+
+                <div className="p-6 flex items-center justify-between">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">System Documentation</h2>
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">Comprehensive platform blueprint, architecture, and code structure.</p>
+                    </div>
+                    <Link to="/super-admin/settings/system-docs" className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">View Docs</Link>
                 </div>
             </div>
         </div>

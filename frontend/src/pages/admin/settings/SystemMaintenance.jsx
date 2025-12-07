@@ -1,42 +1,121 @@
 import React, { useState } from 'react';
+import api from '../../../lib/api';
 import { ArrowLeft, Database, RefreshCw, Download, CheckCircle, AlertCircle, Server } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function SystemMaintenance() {
     const [isClearingCache, setIsClearingCache] = useState(false);
     const [isDownloadingLogs, setIsDownloadingLogs] = useState(false);
+    const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+    const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
-    const handleClearCache = () => {
-        if (window.confirm('Are you sure you want to clear the system cache? This might temporarily affect performance.')) {
-            setIsClearingCache(true);
-            setTimeout(() => {
-                setIsClearingCache(false);
-                alert('System cache cleared successfully!');
-            }, 2000);
+    React.useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        setIsLoadingSettings(true);
+        try {
+            const response = await api.get('/settings?group=system');
+            if (response.data && response.data.maintenance_mode) {
+                setIsMaintenanceMode(response.data.maintenance_mode === '1' || response.data.maintenance_mode === true);
+            }
+        } catch (error) {
+            console.error("Failed to fetch settings:", error);
+        } finally {
+            setIsLoadingSettings(false);
         }
     };
 
-    const handleDownloadLogs = () => {
-        setIsDownloadingLogs(true);
-        setTimeout(() => {
-            setIsDownloadingLogs(false);
-            alert('Logs downloaded successfully!');
-        }, 1500);
+    const handleClearCache = async () => {
+        if (window.confirm('Are you sure you want to clear the system cache? This might temporarily affect performance.')) {
+            setIsClearingCache(true);
+            try {
+                const response = await api.post('/settings/clear-cache');
+                alert(response.data.message || 'System cache cleared successfully!');
+            } catch (error) {
+                console.error("Failed to clear cache:", error);
+                alert('Failed to clear system cache. Please check console for details.');
+            } finally {
+                setIsClearingCache(false);
+            }
+        }
     };
 
+    const handleDownloadLogs = async () => {
+        setIsDownloadingLogs(true);
+        try {
+            const response = await api.get('/settings/download-logs', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'laravel.log');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            console.error("Failed to download logs:", error);
+            alert('Failed to download system logs.');
+        } finally {
+            setIsDownloadingLogs(false);
+        }
+    };
+
+    const handleMaintenanceToggle = async () => {
+        const newValue = !isMaintenanceMode;
+        if (window.confirm(`Are you sure you want to ${newValue ? 'enable' : 'disable'} maintenance mode? ${newValue ? 'Only Super Admins will be able to log in.' : ''}`)) {
+            try {
+                await api.post('/settings', { maintenance_mode: newValue, group: 'system' });
+                setIsMaintenanceMode(newValue);
+                alert(`Maintenance mode ${newValue ? 'enabled' : 'disabled'} successfully.`);
+            } catch (error) {
+                console.error("Failed to toggle maintenance mode:", error);
+                alert('Failed to update maintenance mode settings.');
+            }
+        }
+    };
+
+    if (isLoadingSettings) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <p className="text-slate-500 dark:text-slate-400">Loading settings...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="space-y-8">
-            <div className="flex items-center gap-4">
-                <Link
-                    to="/super-admin/settings"
-                    className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
-                    title="Go Back"
-                >
-                    <ArrowLeft className="h-6 w-6" />
+        <div className="space-y-6 max-w-7xl mx-auto">
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white">System Maintenance</h1>
+                <Link to="/super-admin/settings" className="flex items-center text-sm font-medium text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors">
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back to Settings
                 </Link>
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">System Maintenance</h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Monitor system health and perform maintenance tasks.</p>
+            </div>
+
+            {/* Maintenance Mode Toggle Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-300">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4">
+                        <div className={`p-3 rounded-lg ${isMaintenanceMode ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Maintenance Mode</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
+                                When enabled, only Super Admin users can access the system. All other users will be blocked from logging in or performing actions.
+                            </p>
+                        </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={isMaintenanceMode}
+                            onChange={handleMaintenanceToggle}
+                        />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
                 </div>
             </div>
 

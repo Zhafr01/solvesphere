@@ -157,7 +157,7 @@ export default function ReportsIndex() {
                         </div>
                     </div>
 
-                    {!['super_admin', 'partner_admin'].includes(user?.role) && (
+                    {(!['super_admin', 'partner_admin'].includes(user?.role) || (user?.role === 'super_admin' && slug)) && (
                         <Link to={slug ? `/partners/${slug}/reports/create` : "/reports/create"} className="btn-primary flex items-center gap-2 whitespace-nowrap">
                             <Plus className="h-4 w-4" />
                             New Report
@@ -209,7 +209,7 @@ export default function ReportsIndex() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {['super_admin', 'partner_admin'].includes(user?.role) ? (
+                                            {((user?.role === 'super_admin' && !slug) || user?.role === 'partner_admin') ? (
                                                 <select
                                                     value={report.status}
                                                     onChange={(e) => handleStatusChange(report.id, e.target.value)}
@@ -242,7 +242,7 @@ export default function ReportsIndex() {
                                                 >
                                                     View
                                                 </Link>
-                                                {(user?.id === report.user_id || user?.role === 'super_admin' || (user?.role === 'partner_admin' && user?.partner_id === report.partner_id)) && (
+                                                {(user?.id === report.user_id || (user?.role === 'super_admin' && !slug) || (user?.role === 'partner_admin' && user?.partner_id === report.partner_id)) && (
                                                     <button
                                                         onClick={() => handleDelete(report.id)}
                                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"

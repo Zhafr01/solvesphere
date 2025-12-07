@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Save, ArrowLeft, Globe, Mail, AlertTriangle } from 'lucide-react';
+import api from '../../../lib/api';
+import { Save, ArrowLeft, Globe, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function SiteSettings() {
@@ -7,9 +8,29 @@ export default function SiteSettings() {
     const [formData, setFormData] = useState({
         siteName: 'SolveSphere',
         siteDescription: 'A platform for community problem solving.',
-        contactEmail: 'admin@solvesphere.com',
-        maintenanceMode: false
+        contactEmail: 'admin@solvesphere.com'
     });
+
+    React.useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await api.get('/settings?group=general');
+            const data = response.data;
+            if (data && Object.keys(data).length > 0) {
+                setFormData(prev => ({
+                    ...prev,
+                    siteName: data.siteName || 'SolveSphere',
+                    siteDescription: data.siteDescription || 'A platform for community problem solving.',
+                    contactEmail: data.contactEmail || 'admin@solvesphere.com'
+                }));
+            }
+        } catch (error) {
+            console.error("Failed to fetch settings:", error);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -19,14 +40,18 @@ export default function SiteSettings() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            await api.post('/settings', { ...formData, group: 'general' });
+            alert('Site settings saved successfully!');
+        } catch (error) {
+            console.error("Failed to save settings:", error);
+            alert('Failed to save site settings.');
+        } finally {
             setIsLoading(false);
-            alert('Settings saved successfully!');
-        }, 1000);
+        }
     };
 
     return (
@@ -90,29 +115,7 @@ export default function SiteSettings() {
                             />
                         </div>
 
-                        <div className="col-span-1 md:col-span-2 pt-4">
-                            <div className="flex items-center justify-between p-6 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-900/50">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-full">
-                                        <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-500" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-medium text-amber-900 dark:text-amber-200">Maintenance Mode</h3>
-                                        <p className="text-amber-700 dark:text-amber-400/80">Enable this to prevent users from accessing the site.</p>
-                                    </div>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        name="maintenanceMode"
-                                        checked={formData.maintenanceMode}
-                                        onChange={handleChange}
-                                        className="sr-only peer"
-                                    />
-                                    <div className="w-14 h-7 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-amber-600"></div>
-                                </label>
-                            </div>
-                        </div>
+
                     </div>
 
                     <div className="flex justify-end pt-6 border-t border-slate-100 dark:border-slate-700">

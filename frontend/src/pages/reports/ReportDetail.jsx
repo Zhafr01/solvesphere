@@ -168,7 +168,7 @@ export default function ReportDetail() {
                                 Edit Report
                             </button>
                         )}
-                        {(user?.id === report.user_id || user?.role === 'super_admin' || (user?.role === 'partner_admin' && user?.partner_id === report.partner_id)) && !isEditing && (
+                        {(user?.id === report.user_id || (user?.role === 'super_admin' && !currentPartner) || (user?.role === 'partner_admin' && user?.partner_id === report.partner_id)) && !isEditing && (
                             <button
                                 onClick={handleDelete}
                                 className="shrink-0 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -227,7 +227,7 @@ export default function ReportDetail() {
             </div>
 
             {/* Admin Note Section */}
-            {['super_admin', 'partner_admin'].includes(user?.role) && (
+            {((user?.role === 'super_admin' && !currentPartner) || user?.role === 'partner_admin') && (
                 <div className="mt-8 border-t border-gray-200 dark:border-slate-700 pt-6">
                     <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Admin Note</h3>
                     <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
@@ -251,8 +251,8 @@ export default function ReportDetail() {
                 </div>
             )}
 
-            {/* Display Admin Note for non-admins if it exists */}
-            {!['super_admin', 'partner_admin'].includes(user?.role) && report.admin_note && (
+            {/* Display Admin Note for non-admins (or restricted admins) if it exists */}
+            {(!['super_admin', 'partner_admin'].includes(user?.role) || (user?.role === 'super_admin' && currentPartner)) && report.admin_note && (
                 <div className="mt-8 border-t border-gray-200 dark:border-slate-700 pt-6">
                     <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Admin Note</h3>
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-blue-900 dark:text-blue-100 text-sm whitespace-pre-wrap border border-blue-100 dark:border-blue-800">

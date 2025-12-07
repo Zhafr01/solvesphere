@@ -12,6 +12,7 @@ use App\Http\Controllers\PartnerApplicationController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\PartnerAdmin\PartnerAdminController;
 use App\Http\Controllers\PartnerAdmin\UserManagementController;
+use App\Http\Controllers\SuperAdmin\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +37,7 @@ Route::post('/partners/{slug}/register', [App\Http\Controllers\PartnerAuthContro
 
 
 // Protected Routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'maintenance'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -108,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('partners/{partner}/approve', [SuperAdminController::class, 'approve'])->name('partners.approve');
         Route::post('partners/{partner}/reject', [SuperAdminController::class, 'reject'])->name('partners.reject');
         Route::post('partners/{partner}/suspend', [SuperAdminController::class, 'suspend'])->name('partners.suspend');
+        Route::post('partners/{partner}/activate', [SuperAdminController::class, 'activate'])->name('partners.activate');
         Route::get('dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
 
         Route::post('partners/{partner}/subscription', [SuperAdminController::class, 'updateSubscription'])->name('partners.subscription.update');
@@ -117,7 +119,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('users/{id}/suspend', [App\Http\Controllers\SuperAdmin\UserController::class, 'suspend'])->name('users.suspend');
         Route::post('users/{id}/activate', [App\Http\Controllers\SuperAdmin\UserController::class, 'activate'])->name('users.activate');
         Route::post('users/{id}/ban', [App\Http\Controllers\SuperAdmin\UserController::class, 'ban'])->name('users.ban');
+        Route::post('users/{id}/promote', [App\Http\Controllers\SuperAdmin\UserController::class, 'promote'])->name('users.promote');
     });
+
+    // Settings
+    Route::get('/settings/system-info', [SettingsController::class, 'getSystemInfo']);
+    Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache']);
+    Route::get('/settings/download-logs', [SettingsController::class, 'downloadLogs']);
+    Route::get('/settings', [SettingsController::class, 'getSettings']);
+    Route::post('/settings', [SettingsController::class, 'updateSettings']);
 
     // Partner Admin
     Route::middleware('role:partner_admin')->prefix('partner-admin')->name('partner-admin.')->group(function () {
@@ -129,5 +139,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('users/{user}/suspend', [UserManagementController::class, 'suspend'])->name('users.suspend');
         Route::post('users/{user}/activate', [UserManagementController::class, 'activate'])->name('users.activate');
         Route::post('users/{user}/ban', [UserManagementController::class, 'ban'])->name('users.ban');
+        Route::post('users/{user}/promote', [UserManagementController::class, 'promote'])->name('users.promote');
     });
 });

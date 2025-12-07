@@ -43,13 +43,7 @@ class ForumTopicController extends Controller
             $query->withoutGlobalScope(\App\Scopes\PartnerScope::class);
         }])->latest()->paginate(10);
 
-        if ($request->wantsJson() && !$request->inertia()) {
-            return response()->json($topics);
-        }
-
-        return \Inertia\Inertia::render('Forum/Index', [
-            'topics' => $topics
-        ]);
+        return response()->json($topics);
     }
     
     public function store(Request $request)
@@ -100,13 +94,7 @@ class ForumTopicController extends Controller
         $forumTopic->is_liked_by_user = $forumTopic->likes()->where('user_id', Auth::id())->exists();
         $forumTopic->likes_count = $forumTopic->likes()->count();
         
-        if (request()->wantsJson() && !request()->inertia()) {
-            return response()->json($forumTopic);
-        }
-
-        return \Inertia\Inertia::render('Forum/Show', [
-            'topic' => $forumTopic
-        ]);
+        return response()->json($forumTopic);
     }
     
     public function update(Request $request, $id)

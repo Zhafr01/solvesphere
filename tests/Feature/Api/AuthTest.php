@@ -84,7 +84,7 @@ class AuthTest extends TestCase
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
-        ])->putJson('/api/profile', [
+        ])->patchJson('/api/profile', [
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
         ]);
@@ -103,12 +103,16 @@ class AuthTest extends TestCase
 
     public function test_user_can_delete_account()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'password' => bcrypt('password'),
+        ]);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
-        ])->deleteJson('/api/profile');
+        ])->deleteJson('/api/profile', [
+            'password' => 'password',
+        ]);
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Account deleted successfully']);

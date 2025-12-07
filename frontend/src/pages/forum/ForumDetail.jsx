@@ -7,9 +7,9 @@ import { MessageSquare, ThumbsUp, Trash2, ArrowLeft, Reply, Edit2, MoreVertical 
 import { motion, AnimatePresence } from 'framer-motion';
 import PageLoader from '../../components/ui/PageLoader';
 
-const CommentItem = ({ comment, onReply, onLike, onDelete, onEdit, user, depth = 0 }) => {
+const CommentItem = ({ comment, onReply, onLike, onDelete, onEdit, user, currentPartner, depth = 0 }) => {
     const isLiked = comment.likes?.some(l => l.id === user?.id);
-    const canModify = user?.id === comment.user_id || user?.role === 'super_admin' || user?.role === 'partner_admin';
+    const canModify = user?.id === comment.user_id || (user?.role === 'super_admin' && !currentPartner) || (user?.role === 'partner_admin' && user?.partner_id === currentPartner?.id);
     const [isReplying, setIsReplying] = useState(false);
     const [replyContent, setReplyContent] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -51,10 +51,12 @@ const CommentItem = ({ comment, onReply, onLike, onDelete, onEdit, user, depth =
                                 <span className="font-bold text-gray-900 dark:text-white text-sm">{comment.user?.name}</span>
                                 {comment.user?.role === 'super_admin' && (
                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 uppercase tracking-wider">
-                                        Super Admin
+                                        {/* If we are on a partner site (currentPartner exists), show "Super Admin" to distinguish.
+                                            If we are on main site (!currentPartner), just show "Admin". */}
+                                        {currentPartner ? 'Super Admin' : 'Admin'}
                                     </span>
                                 )}
-                                {comment.user?.role === 'partner_admin' && (
+                                {comment.user?.role === 'partner_admin' && currentPartner && (
                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 border border-violet-200 dark:border-violet-500/30 uppercase tracking-wider">
                                         Admin
                                     </span>
@@ -156,6 +158,7 @@ const CommentItem = ({ comment, onReply, onLike, onDelete, onEdit, user, depth =
                             onDelete={onDelete}
                             onEdit={onEdit}
                             user={user}
+                            currentPartner={currentPartner}
                             depth={depth + 1}
                         />
                     ))}
@@ -326,7 +329,7 @@ export default function ForumDetail() {
     if (loading) return <PageLoader message="Loading topic..." />;
     if (!topic) return <div>Topic not found.</div>;
 
-    const canModifyTopic = user?.id === topic.user_id || user?.role === 'super_admin' || user?.role === 'partner_admin';
+    const canModifyTopic = user?.id === topic.user_id || (user?.role === 'super_admin' && !currentPartner) || (user?.role === 'partner_admin' && user?.partner_id === topic.partner_id);
 
     return (
         <motion.div
@@ -450,6 +453,7 @@ export default function ForumDetail() {
                                 onDelete={handleDeleteComment}
                                 onEdit={handleEditComment}
                                 user={user}
+                                currentPartner={currentPartner}
                             />
                         ))}
                     </AnimatePresence>

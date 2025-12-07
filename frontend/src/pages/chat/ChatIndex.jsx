@@ -292,7 +292,9 @@ export default function ChatIndex() {
                 if (selectedImage) formData.append('image', selectedImage);
 
                 const { data } = await api.post(`/chat/${activeChat.id}`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                    headers: {
+                        'Content-Type': undefined, // Correctly override default application/json so browser sets multipart/form-data with boundary
+                    }
                 });
 
                 setShouldScrollToBottom(true); // Force scroll to bottom when sending
@@ -319,7 +321,12 @@ export default function ChatIndex() {
 
         } catch (error) {
             console.error("Failed to send/update message", error);
-            alert("Failed to send/update message");
+            // alert("Failed to send/update message");
+            const errorMessage = error.response?.data?.message || error.message || "Failed to send/update message";
+            alert(`Error: ${errorMessage}`);
+            if (error.response?.data?.errors) {
+                console.log("Validation errors:", error.response.data.errors);
+            }
         } finally {
             setSending(false);
         }

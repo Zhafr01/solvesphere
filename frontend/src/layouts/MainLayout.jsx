@@ -344,8 +344,13 @@ export default function MainLayout() {
             </main>
 
             <footer className="glass-panel mt-auto py-6 border-t border-white/40 dark:border-slate-700/40 hidden md:block">
-                <div className="max-w-[95%] mx-auto px-4 text-center text-slate-500 dark:text-slate-400 text-sm">
-                    &copy; {new Date().getFullYear()} SolveSphere. All rights reserved.
+                <div className="max-w-[95%] mx-auto px-4 flex justify-between items-center text-slate-500 dark:text-slate-400 text-sm">
+                    <span>&copy; {new Date().getFullYear()} SolveSphere. All rights reserved.</span>
+                    <div className="flex gap-4">
+                        <Link to="/about-us" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                            About Us
+                        </Link>
+                    </div>
                 </div>
             </footer>
 

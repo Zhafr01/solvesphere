@@ -128,20 +128,7 @@ class DashboardController extends Controller
 
         }
 
-        if ($request->wantsJson() && !$request->inertia()) {
-            return response()->json([
-                'news' => $news,
-                'forumTopics' => $forumTopics,
-                'reports' => $reports,
-                'stats' => $stats,
-                'total_partners' => $total_partners,
-                'pending_partners' => $pending_partners,
-                'total_users' => $total_users,
-                'user_rating' => $userRating ?? null,
-            ]);
-        }
-
-        return \Inertia\Inertia::render('Dashboard', [
+        return response()->json([
             'news' => $news,
             'forumTopics' => $forumTopics,
             'reports' => $reports,
@@ -149,6 +136,7 @@ class DashboardController extends Controller
             'total_partners' => $total_partners,
             'pending_partners' => $pending_partners,
             'total_users' => $total_users,
+            'user_rating' => $userRating ?? null,
         ]);
     }
 }

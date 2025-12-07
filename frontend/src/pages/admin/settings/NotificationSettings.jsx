@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../../lib/api';
 import { Save, ArrowLeft, Bell, Mail, Smartphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -12,6 +13,28 @@ export default function NotificationSettings() {
         newReportAlert: true
     });
 
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await api.get('/settings?group=notification');
+            const data = response.data;
+            if (data && Object.keys(data).length > 0) {
+                setFormData({
+                    emailNotifications: data.emailNotifications === '1' || data.emailNotifications === true,
+                    pushNotifications: data.pushNotifications === '1' || data.pushNotifications === true,
+                    digestFrequency: data.digestFrequency || 'daily',
+                    newPartnerAlert: data.newPartnerAlert === '1' || data.newPartnerAlert === true,
+                    newReportAlert: data.newReportAlert === '1' || data.newReportAlert === true
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch settings:", error);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -20,14 +43,18 @@ export default function NotificationSettings() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await api.post('/settings', { ...formData, group: 'notification' });
             alert('Notification settings saved successfully!');
-        }, 1000);
+        } catch (error) {
+            console.error("Failed to save settings:", error);
+            alert('Failed to save notification settings.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
