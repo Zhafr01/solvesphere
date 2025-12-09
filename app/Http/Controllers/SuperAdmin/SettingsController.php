@@ -32,17 +32,46 @@ class SettingsController extends Controller
      */
     public function getSystemInfo()
     {
+        // 1. Get Logs (Last 50 lines)
+        $logFile = storage_path('logs/laravel.log');
+        $logs = [];
+        if (file_exists($logFile)) {
+            $file = file($logFile);
+            $logs = array_slice($file, -50);
+            $logs = array_reverse($logs); // Newest first
+        }
+
+        // 2. Database Size
+        try {
+            $dbName = DB::connection()->getDatabaseName();
+            $dbSize = DB::select("SELECT round(sum(data_length + index_length) / 1024 / 1024, 2) as 'size' FROM information_schema.tables WHERE table_schema = ?", [$dbName]);
+            $dbSizeMb = $dbSize[0]->size . ' MB';
+        } catch (\Exception $e) {
+            $dbSizeMb = 'Unknown';
+        }
+
+        // 3. CPU Load (Unix only)
+        $load = 'N/A';
+        if (function_exists('sys_getloadavg')) {
+            $load = sys_getloadavg();
+            $load = isset($load[0]) ? $load[0] : 'N/A';
+        }
+
         return response()->json([
             'php_version' => phpversion(),
             'laravel_version' => app()->version(),
-            'os' => php_uname('s') . ' ' . php_uname('r'), // Short OS name
+            'os' => php_uname('s') . ' ' . php_uname('r'),
             'server' => $_SERVER['SERVER_SOFTWARE'] ?? 'Apache/Nginx',
             'db_connection' => DB::connection()->getDatabaseName(),
             'db_driver' => DB::connection()->getDriverName(),
+            'db_size' => $dbSizeMb,
             'disk_free_space' => disk_free_space('/') ? round(disk_free_space('/') / 1024 / 1024 / 1024, 2) . ' GB' : 'Unknown',
             'disk_total_space' => disk_total_space('/') ? round(disk_total_space('/') / 1024 / 1024 / 1024, 2) . ' GB' : 'Unknown',
+            'memory_usage' => round(memory_get_usage(true) / 1024 / 1024, 2) . ' MB',
+            'cpu_load' => $load,
             'user_count' => \App\Models\User::count(),
             'partner_count' => \App\Models\Partner::count(),
+            'logs' => $logs
         ]);
     }
 

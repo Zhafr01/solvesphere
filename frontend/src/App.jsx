@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PartnerProvider } from './context/PartnerContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -70,7 +70,7 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <ThemeProvider>
-          <Router>
+          <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <PartnerProvider>
               <Routes>
                 {/* Public Routes */}
@@ -341,7 +341,7 @@ function App() {
                 </Route>
               </Routes >
             </PartnerProvider >
-          </Router >
+          </HashRouter >
         </ThemeProvider >
       </AuthProvider >
     </ErrorBoundary >

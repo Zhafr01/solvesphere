@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Instagram, Users, Award, Code, Database, Layout, Sparkles, Globe, Zap, Heart, Bookmark } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
-const TeamMemberCard = ({ member, position }) => {
+const TeamMemberCard = ({ member, position, index }) => {
     const cardRef = useRef(null);
 
     // Track scroll progress relative to this specific card
@@ -35,17 +35,32 @@ const TeamMemberCard = ({ member, position }) => {
     // MOVE DOWN: Pushes card down to separate from rising image (prevents text crash)
     const cardMoveY = useTransform(smoothProgress, [0, 1], [0, 100]);
 
-    // Directional lateral movement (Fall back slightly to sides)
-    const xOutput = position === 'left' ? -50 : position === 'right' ? 50 : 0;
+    const [isMobile, setIsMobile] = React.useState(false);
+
+    React.useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Directional lateral movement (Fall back slightly to sides) - Disabled on mobile
+    const xOutput = (position === 'left' && !isMobile) ? -50 : (position === 'right' && !isMobile) ? 50 : 0;
     const cardX = useTransform(smoothProgress, [0, 1], [0, xOutput]);
 
     // Dynamic style for the perspective container
     const perspectiveStyle = {
-        perspective: "1200px"
+        perspective: "1200px",
+        ...(isMobile ? {
+            position: 'sticky',
+            top: `${100 + (index * 30)}px`,
+            zIndex: 10 + index
+        } : {})
     };
 
-    // Center card elevation (moved up via negative margin)
-    const containerClasses = `relative h-[650px] flex items-center justify-center -my-10 ${position === 'center' ? '-mt-24 z-20' : ''}`;
+    // Center card elevation (moved up via negative margin) - Only on desktop
+    // On mobile: reduced height to 550px and removed negative margins/bottom margin to tighten stack
+    const containerClasses = `relative flex items-center justify-center ${isMobile ? 'h-[550px] mb-0' : 'h-[650px] -my-10'} md:-my-10 md:h-[650px] ${position === 'center' ? 'md:-mt-24 z-20' : ''}`;
 
     return (
         <div ref={cardRef} className={containerClasses} style={perspectiveStyle}>
@@ -169,7 +184,7 @@ export default function AboutUs() {
             responsibility: "Fullstack Developer & System Architect",
             description: "Responsible for the entire system architecture, backend development with Laravel, and seamless integration of various APIs. Passionate about scalable code and clean design patterns.",
             skills: ["Laravel", "React", "System Architecture", "DevOps"],
-            image: "/images/zhafier.png",
+            image: "/public/images/zhafier.png",
             icon: <Database className="h-6 w-6 text-white" />,
             color: "from-indigo-500 to-purple-500",
             shadow: "shadow-indigo-500/20"
@@ -182,7 +197,7 @@ export default function AboutUs() {
             responsibility: "Frontend & UI/UX Designer",
             description: "Crafting beautiful and intuitive user interfaces. Focuses on user experience, responsive design, and implementing modern visual effects to make the platform come alive.",
             skills: ["Figma", "React", "Tailwind CSS", "Animation"],
-            image: "/images/swyhke.png",
+            image: "/public/images/swyhke.png",
             icon: <Layout className="h-6 w-6 text-white" />,
             color: "from-pink-500 to-rose-500",
             shadow: "shadow-pink-500/20"
@@ -195,7 +210,7 @@ export default function AboutUs() {
             responsibility: "Frontend Specialist & Documentation",
             description: "Ensures code quality and thorough documentation. Specializes in React component optimization and maintaining a consistent design system across the application.",
             skills: ["React", "Documentation", "QA Testing", "CSS"],
-            image: "/images/reva.png",
+            image: "/public/images/reva.png",
             icon: <Code className="h-6 w-6 text-white" />,
             color: "from-emerald-500 to-teal-500",
             shadow: "shadow-emerald-500/20"
@@ -277,14 +292,16 @@ export default function AboutUs() {
                 </motion.div>
 
                 {/* Team Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-y-24 gap-x-8 mb-40 items-start">
+                {/* Modified for Mobile Stacking: flex-col ensures sticky items stack within the same container context */}
+                {/* Reduced gap-y from 24 to 4 on mobile to fix large gaps between sticky cards */}
+                <div className="flex flex-col gap-y-4 md:grid md:grid-cols-3 md:gap-y-24 gap-x-8 mb-40 items-start relative">
                     {team.map((member, index) => {
                         // Determine position based on index in the reordered array
                         // 0: Left, 1: Center, 2: Right
                         const position = index === 0 ? 'left' : index === 1 ? 'center' : 'right';
 
                         return (
-                            <TeamMemberCard key={index} member={member} position={position} />
+                            <TeamMemberCard key={index} member={member} position={position} index={index} />
                         );
                     })}
                 </div>

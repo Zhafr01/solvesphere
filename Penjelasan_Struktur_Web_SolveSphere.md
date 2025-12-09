@@ -76,6 +76,12 @@ Fitur-fitur ini tidak terlihat oleh user biasa dan hanya muncul untuk level Admi
 4.  **Auto-Redirect Context**
     *   **Logika**: Jika user sedang berada di halaman mitra A (`/partners/A`), lalu login atau mendaftar, sistem cerdas akan mengembalikan user tersebut ke halaman mitra A, bukan melempar ke halaman utama.
 
+
+5.  **Mobile Responsiveness & UI**
+    *   **Mobile Menu**: Navigasi khusus mobile dengan akses cepat ke Profil, Notifikasi, dan Link Legal (Footer).
+    *   **Bottom Navigation**: Bar navigasi bawah untuk akses cepat ke fitur utama (Home, News, Forum, Reports).
+    *   **Adaptive Layout**: Penyesuaian layout otomatis pada halaman kompleks seperti `AboutUs` (Card Stacking) dan Dashboard.
+
 ---
 
 ## 4. Diagram Alur Data (DFD) Komprehensif

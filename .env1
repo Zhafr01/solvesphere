@@ -2,7 +2,7 @@ APP_NAME=Laravel
 APP_ENV=production
 APP_KEY=base64:BlhjuLN88qCg7upT3X18TMR46v2UQqIMLoBvUJXw+Tw=
 APP_DEBUG=true
-APP_URL=https://capstone-dtei.um.ac.id/solvesphere
+APP_URL=https://capstone-dtei.um.ac.id/solvesphere-backend
 
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en

@@ -64,40 +64,45 @@ export default function ChatIndex() {
     // Scroll to highlighted message or bottom
 
     // Scroll to highlighted message or bottom
+    // Scroll to highlighted message or bottom
     const scrollContainerRef = useRef(null);
     const isAtBottom = useRef(true);
     const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    // Track if we are currently loading history to prevent auto-scroll to bottom
+    const isLoadingHistory = useRef(false);
+    // Track previous scroll height to restore position
+    const prevScrollHeight = useRef(0);
 
     // Handle scroll events to track if user is at bottom or top
     const handleScroll = () => {
         if (scrollContainerRef.current) {
             const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-            // Use a smaller threshold to avoid false positives when user scrolls up slightly
+            // Use a smaller threshold to avoid false positives
             const atBottom = scrollHeight - scrollTop - clientHeight < 50;
             isAtBottom.current = atBottom;
 
             // Fetch more messages if scrolled to top
-            if (scrollTop === 0 && !loadingMore && hasMore) {
-                const currentHeight = scrollHeight;
+            if (scrollTop === 0 && !loadingMore && hasMore && !isLoadingHistory.current) {
+                // Save current scroll height to restore relative position later
+                prevScrollHeight.current = scrollHeight;
+                isLoadingHistory.current = true;
                 setLoadingMore(true);
+
                 fetchMessages(activeChat.id, false, page + 1).then(() => {
-                    // Restore scroll position after new messages loaded
-                    // We need to wait for DOM update
-                    setTimeout(() => {
-                        if (scrollContainerRef.current) {
-                            const newHeight = scrollContainerRef.current.scrollHeight;
-                            scrollContainerRef.current.scrollTop = newHeight - currentHeight;
-                        }
-                    }, 0);
+                    // Logic handled in useEffect [messages]
+                }).catch(() => {
+                    setLoadingMore(false);
+                    isLoadingHistory.current = false;
                 });
             }
         }
     };
 
-    // Scroll to highlighted message or bottom
+    // Scroll effect
     useEffect(() => {
         if (highlightedMessageId && messages.length > 0) {
+            // Priority: Scroll to highlighted message
             const element = document.getElementById(`message-${highlightedMessageId}`);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -108,18 +113,31 @@ export default function ChatIndex() {
                 }, 2000);
             }
         } else if (scrollContainerRef.current && !highlightedMessageId) {
-            // Scroll if we are at bottom or if it's the first load/send (shouldScrollToBottom)
-            if (isAtBottom.current || shouldScrollToBottom) {
-                setTimeout(() => {
-                    if (scrollContainerRef.current) {
-                        const { scrollHeight, clientHeight } = scrollContainerRef.current;
-                        scrollContainerRef.current.scrollTo({
-                            top: scrollHeight - clientHeight,
-                            behavior: shouldScrollToBottom ? 'auto' : 'smooth'
-                        });
-                    }
-                }, 100);
-                if (shouldScrollToBottom) setShouldScrollToBottom(false);
+            if (isLoadingHistory.current) {
+                // CASE: Loaded History (scrolled up)
+                // Restore scroll position so user sees the same message they were looking at
+                const newScrollHeight = scrollContainerRef.current.scrollHeight;
+                const diff = newScrollHeight - prevScrollHeight.current;
+                scrollContainerRef.current.scrollTop = diff;
+
+                isLoadingHistory.current = false;
+                setLoadingMore(false);
+            } else {
+                // CASE: New Message / Initial Load
+                // Scroll if we are at bottom or if it's the first load
+                if (isAtBottom.current || shouldScrollToBottom) {
+                    // Use setTimeout to ensure DOM is updated
+                    setTimeout(() => {
+                        if (scrollContainerRef.current) {
+                            const { scrollHeight, clientHeight } = scrollContainerRef.current;
+                            scrollContainerRef.current.scrollTo({
+                                top: scrollHeight - clientHeight,
+                                behavior: shouldScrollToBottom ? 'auto' : 'smooth'
+                            });
+                        }
+                    }, 100);
+                    if (shouldScrollToBottom) setShouldScrollToBottom(false);
+                }
             }
         }
     }, [messages, highlightedMessageId, user.id, shouldScrollToBottom]);
@@ -132,7 +150,8 @@ export default function ChatIndex() {
         setNewMessage('');
         setPage(1);
         setHasMore(true);
-        setMessages([]); // Clear previous messages to avoid confusion
+        setMessages([]); // Clear previous messages
+        isLoadingHistory.current = false; // Reset history flag
     }, [activeChat?.id]);
 
     useEffect(() => {

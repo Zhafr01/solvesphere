@@ -165,7 +165,7 @@ export default function MainLayout() {
                                 ) : (
                                     <div className="relative flex items-center gap-2">
                                         <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 to-fuchsia-500 blur-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 rounded-full"></div>
-                                        <img src="/images/logo.png" alt="SolveSphere Logo" className="h-8 w-auto relative z-10" />
+                                        <img src="/public/images/logo.png" alt="SolveSphere Logo" className="h-8 w-auto relative z-10" />
                                         <span className="text-2xl font-black bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300 relative z-10">
                                             SolveSphere
                                         </span>
@@ -265,8 +265,8 @@ export default function MainLayout() {
                             )}
                         </div>
 
-                        {/* Mobile Menu Button */}
                         <div className="flex items-center lg:hidden gap-4">
+                            {user && <NotificationPopover />}
                             <ThemeToggle />
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -288,6 +288,27 @@ export default function MainLayout() {
                             className="lg:hidden absolute top-20 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-b border-white/20 dark:border-slate-700/40 overflow-hidden z-40 shadow-xl"
                         >
                             <div className="py-4 space-y-1 px-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
+                                {user && (
+                                    <div className="mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                                        <Link
+                                            to={currentPartner ? `/partners/${currentPartner.slug}/profile` : "/profile"}
+                                            className="flex items-center gap-3"
+                                        >
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-lg text-white font-bold shadow-md overflow-hidden ring-2 ring-white dark:ring-slate-700">
+                                                {user.profile_picture ? (
+                                                    <img src={user.profile_picture} alt={user.name} className="h-full w-full object-cover" />
+                                                ) : (
+                                                    <span>{user.name.charAt(0)}</span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-slate-800 dark:text-slate-200">{user.name}</span>
+                                                <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">{(user.role || 'user').replace('_', ' ')}</span>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                )}
+
                                 {user?.role === 'super_admin' ? (
                                     <>
                                         <Link to={currentPartner ? `/partners/${currentPartner.slug}/dashboard` : "/dashboard"} className="mobile-nav-link">Dashboard</Link>
@@ -321,7 +342,7 @@ export default function MainLayout() {
                                     </>
                                 )}
                                 {currentPartner && (
-                                    <Link to={user ? "/dashboard" : "/"} className="mobile-nav-link border-t border-slate-100 dark:border-slate-700 mt-2 pt-2 text-slate-500">
+                                    <Link to={user ? "/dashboard" : "/"} className="mobile-nav-link border-t border-slate-100 dark:border-slate-800 mt-2 pt-2 text-slate-500">
                                         Back to Main Site
                                     </Link>
                                 )}
@@ -333,6 +354,13 @@ export default function MainLayout() {
                                         <Link to="/register" className="btn-primary w-full justify-center">Register</Link>
                                     </div>
                                 )}
+
+                                {/* Legal Links */}
+                                <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                                    <Link to="/about-us" className="mobile-nav-link text-sm text-slate-500 font-normal">About Us</Link>
+                                    <Link to="/privacy-policy" className="mobile-nav-link text-sm text-slate-500 font-normal">Privacy Policy</Link>
+                                    <Link to="/terms-of-service" className="mobile-nav-link text-sm text-slate-500 font-normal">Terms of Service</Link>
+                                </div>
                             </div>
                         </motion.div>
                     )}

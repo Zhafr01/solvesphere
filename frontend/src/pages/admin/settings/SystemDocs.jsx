@@ -432,6 +432,73 @@ flowchart TB
     end
 `;
 
+    const seqUserFlow = `
+sequenceDiagram
+    participant User
+    participant FE as Frontend (React)
+    participant API as Backend (Laravel)
+    participant DB as Database
+
+    Note over User, DB: Skenario: User Melapor di Website Mitra (Batu)
+    
+    User->>FE: Buka https://solvesphere.com/partners/batu
+    FE->>API: GET /api/partners/batu
+    API->>DB: SELECT * FROM partners WHERE slug='batu'
+    DB-->>API: Returns {id: 5, name: "Batu", ...}
+    API-->>FE: Response Partner Data
+    FE->>FE: Sets PartnerContext {id: 5}
+
+    User->>FE: Login & Klik "Buat Laporan"
+    FE->>API: POST /api/reports
+    Note right of FE: Payload: {title: "Jalan Rusak", content: "...", partner_id: 5}
+    API->>API: Validate Token (Sanctum)
+    API->>DB: INSERT INTO reports (user_id, partner_id, ...) VALUES (101, 5, ...)
+    DB-->>API: Success
+    API-->>FE: 201 Created
+    FE-->>User: Show Success Modal
+`;
+
+    const seqPartnerFlow = `
+sequenceDiagram
+    participant Admin as Partner Admin
+    participant FE as Frontend
+    participant API as Backend
+    participant DB as Database
+
+    Note over Admin, DB: Skenario: Admin Mitra Mengelola Laporan
+    
+    Admin->>FE: Login Dashboard (role: partner_admin)
+    FE->>API: GET /api/partners/my-dashboard
+    API->>API: Auth::user()->partner_id Check
+    Note right of API: User is Admin of Partner ID 5
+    API->>DB: SELECT * FROM reports WHERE partner_id = 5
+    DB-->>API: Returns only Partner 5 reports
+    API-->>FE: JSON List Laporan
+    FE-->>Admin: Tabel Laporan Warga
+    
+    Admin->>FE: Update Status "Done"
+    FE->>API: PUT /api/reports/99
+    API->>DB: UPDATE reports SET status='done' WHERE id=99 AND partner_id=5
+    DB-->>API: Success
+`;
+
+    const seqSuperFlow = `
+sequenceDiagram
+    participant Super as Super Admin
+    participant FE as Frontend
+    participant API as Backend
+    participant DB as Database
+
+    Note over Super, DB: Skenario: Super Admin Memantau System
+    
+    Super->>FE: Access /super-admin/settings
+    FE->>API: GET /api/system/health
+    API->>DB: SHOW TABLES STATUS / Check Connections
+    DB-->>API: Status OK
+    API-->>FE: {db: "Connected", redis: "Ready"}
+    FE-->>Super: Tampilkan Status Indikator Hijau
+`;
+
     const DocsSection = ({ title, children, icon: Icon }) => (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
@@ -686,64 +753,115 @@ flowchart TB
                         </div>
                     </DocsSection>
 
-                    <DocsSection title="3. Frontend Structure (React + Vite) - Pages" icon={Layers}>
-                        <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                            <table className="w-full text-xs text-left">
-                                <thead className="bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300">
-                                    <tr>
-                                        <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">Directory</th>
-                                        <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">File</th>
-                                        <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/</td>
-                                        <td className="px-4 py-2 font-bold">LandingPage.jsx</td>
-                                        <td className="px-4 py-2">Halaman Utama (Global). Search Mitra, Animasi Hero, Features Showcase.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/</td>
-                                        <td className="px-4 py-2 font-bold">AboutUs.jsx</td>
-                                        <td className="px-4 py-2">Profile Tim Pengembang (Animations, Hover effects).</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/</td>
-                                        <td className="px-4 py-2 font-bold">Login.jsx / Register.jsx</td>
-                                        <td className="px-4 py-2">Form Otentikasi User & Partner. Validasi Input.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/</td>
-                                        <td className="px-4 py-2 font-bold">PartnerSite.jsx</td>
-                                        <td className="px-4 py-2">Halaman Dinamis Mitra (`/partners/:slug`). Memuat data spesifik cabang.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/dashboard</td>
-                                        <td className="px-4 py-2 font-bold">Dashboard.jsx</td>
-                                        <td className="px-4 py-2">User/Admin Panel. Grafik Statistik, Shortcut Menu, Recent Activity.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/reports</td>
-                                        <td className="px-4 py-2 font-bold">CreateReport.jsx</td>
-                                        <td className="px-4 py-2">Form Wizard Laporan. Drag-drop Image Upload, Location Picker.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/forum</td>
-                                        <td className="px-4 py-2 font-bold">ForumIndex.jsx / Detail.jsx</td>
-                                        <td className="px-4 py-2">List Topik (Infinite Scroll), Detail percakapan, Rich Text Input.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/chat</td>
-                                        <td className="px-4 py-2 font-bold">ChatIndex.jsx</td>
-                                        <td className="px-4 py-2">Layout Split (Kontak Kiri, Chat Kanan). Realtime UI updates/polling.</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="px-4 py-2 font-mono text-slate-500">/admin</td>
-                                        <td className="px-4 py-2 font-bold">SystemDocs.jsx</td>
-                                        <td className="px-4 py-2">**Self-Reference**. Halaman Dokumentsi ini (Mermaid Diagrams, Code Explorer).</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <DocsSection title="3. Frontend Structure (React + Vite) - Complete Architecture" icon={Layers}>
+                        <div className="space-y-6">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                                Struktur direktori <code>src</code> diorganisir berdasarkan fitur dan tanggung jawab komponen.
+                            </p>
+
+                            {/* Core Directories */}
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                                    <div className="bg-slate-100 dark:bg-slate-700/50 px-4 py-2 font-mono text-sm font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
+                                        /src (Root)
+                                    </div>
+                                    <div className="p-4 bg-white dark:bg-slate-800 space-y-3">
+                                        <div className="flex gap-3">
+                                            <span className="font-mono text-indigo-500 text-sm min-w-[120px]">/components</span>
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                <strong className="block text-slate-800 dark:text-white mb-1">Reusable UI Components</strong>
+                                                Komponen atomik yang bersifat universal. Contoh: <code>Button.jsx</code>, <code>Card.jsx</code>, <code>Input.jsx</code>, <code>Modal.jsx</code>.
+                                                Dipisahkan ke dalam folder <code>/ui</code> untuk komponen dasar dan folder fitur spesifik jika perlu.
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-slate-100 dark:border-slate-700 my-2"></div>
+
+                                        <div className="flex gap-3">
+                                            <span className="font-mono text-indigo-500 text-sm min-w-[120px]">/context</span>
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                <strong className="block text-slate-800 dark:text-white mb-1">Global State Management (React Context)</strong>
+                                                <ul>
+                                                    <li><code>AuthContext.jsx</code>: Mengelola user session, login status, dan token JWT.</li>
+                                                    <li><code>PartnerContext.jsx</code>: Menyimpan data Mitra aktif saat user mengakses sub-domain/path mitra.</li>
+                                                    <li><code>ThemeContext.jsx</code>: Mengontrol Dark/Light mode aplikasi.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-slate-100 dark:border-slate-700 my-2"></div>
+
+                                        <div className="flex gap-3">
+                                            <span className="font-mono text-indigo-500 text-sm min-w-[120px]">/layouts</span>
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                <strong className="block text-slate-800 dark:text-white mb-1">Page Layout Wrappers</strong>
+                                                <ul>
+                                                    <li><code>MainLayout.jsx</code>: Layout standar dengan Navbar, Sidebar (Desktop/Mobile), dan Footer. Digunakan untuk user yang sudah login/public.</li>
+                                                    <li><code>GuestLayout.jsx</code>: Layout khusus halaman Auth (Login/Register) tanpa navigasi kompleks.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-slate-100 dark:border-slate-700 my-2"></div>
+
+                                        <div className="flex gap-3">
+                                            <span className="font-mono text-indigo-500 text-sm min-w-[120px]">/lib</span>
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                <strong className="block text-slate-800 dark:text-white mb-1">Libraries & Configurations</strong>
+                                                <li><code>api.js</code>: Instance Axios yang telah dikonfigurasi dengan Base URL dan Interceptors (Auto-attach Bearer Token).</li>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-slate-100 dark:border-slate-700 my-2"></div>
+
+                                        <div className="flex gap-3">
+                                            <span className="font-mono text-indigo-500 text-sm min-w-[120px]">/pages</span>
+                                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                                <strong className="block text-slate-800 dark:text-white mb-1">Page Components (Routes)</strong>
+                                                Halaman utama aplikasi yang terdaftar di <code>App.jsx</code>.
+                                                <ul>
+                                                    <li><code>/admin</code>: Halaman khusus panel Super Admin & Partner Admin.</li>
+                                                    <li><code>/auth</code>: Login, Register, Forgot Password.</li>
+                                                    <li><code>/chat</code>: Fitur Chat realtime.</li>
+                                                    <li><code>/forum</code>: Halaman list topik dan detail diskusi.</li>
+                                                    <li><code>/news</code>: Halaman berita mitra.</li>
+                                                    <li><code>/reports</code>: Management laporan pengaduan.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Key Files Table */}
+                            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                                <table className="w-full text-xs text-left">
+                                    <thead className="bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300">
+                                        <tr>
+                                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">File Penting</th>
+                                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">Fungsi Utama</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                                        <tr>
+                                            <td className="px-4 py-2 font-bold font-mono">App.jsx</td>
+                                            <td className="px-4 py-2">Router definition (React Router v6), Global Context Providers wrapper. Mendefinisikan semua path URL dan Proteksi Route (Guard).</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-bold font-mono">main.jsx</td>
+                                            <td className="px-4 py-2">Entry point React. Mounting ke DOM element <code>#root</code>. Import CSS global.</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-bold font-mono">index.css</td>
+                                            <td className="px-4 py-2">Global Styles dengan Tailwind Directives. Definisi Custom Keyframes (Animasi) dan Scrollbar styling.</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-bold font-mono">vite.config.js</td>
+                                            <td className="px-4 py-2">Konfigurasi Build tool Vite. Setup Proxy ke Backend Laravel untuk menghindari CORS saat development.</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-2 font-bold font-mono">tailwind.config.js</td>
+                                            <td className="px-4 py-2">Konfigurasi Design System. Define warna custom, font-family, plugin (typography, forms, animate).</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </DocsSection>
 
@@ -771,7 +889,11 @@ flowchart TB
                                 <ul className="list-disc ml-4 text-xs space-y-2 text-slate-600 dark:text-slate-300">
                                     <li>
                                         <strong>MainLayout.jsx</strong>:
-                                        Wrapper utama App. Navbar (Responsive), Sidebar (Mobile), Footer. Cek Auth state.
+                                        Wrapper utama App. Navbar (Responsive), Sidebar (Mobile Menu dengan Profil & Notifikasi), Footer.
+                                    </li>
+                                    <li>
+                                        <strong>BottomNav.jsx</strong>:
+                                        Navigasi bawah khusus mobile untuk akses cepat (News, Forum, Home, Reports, Profile).
                                     </li>
                                     <li>
                                         <strong>MermaidDiagram.jsx</strong>:
@@ -779,13 +901,228 @@ flowchart TB
                                     </li>
                                     <li>
                                         <strong>NotificationPopover.jsx</strong>:
-                                        Dropdown notifikasi AJAX. Auto-refresh badge count.
+                                        Dropdown notifikasi AJAX. Auto-refresh badge count. Tersedia di Desktop & Mobile Header.
                                     </li>
                                     <li>
                                         <strong>ui/Card.jsx, Button.jsx</strong>:
                                         Komponen atomik reusable dengan styling konsisten (Tailwind).
                                     </li>
                                 </ul>
+                            </div>
+                        </div>
+                    </DocsSection>
+
+                    <DocsSection title="5. End-to-End Code Flow & Database Interaction" icon={Activity}>
+                        <div className="space-y-8">
+                            <p>
+                                Bagian ini menjelaskan secara rinci bagaimana baris kode di Frontend berinteraksi dengan Backend dan Database untuk setiap Role.
+                            </p>
+
+                            {/* FLOW 1: GENERAL USER */}
+                            <div className="border-l-4 border-indigo-500 pl-4">
+                                <h4 className="font-bold text-lg text-indigo-700 dark:text-indigo-400 mb-2">A. General User Flow (Skenario: Melapor Masalah)</h4>
+                                <div className="space-y-4">
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded text-sm text-slate-700 dark:text-slate-300">
+                                        <ol className="list-decimal ml-4 space-y-2">
+                                            <li>
+                                                <strong>Inisiasi Context (Frontend)</strong>:
+                                                Saat user membuka <code>/partners/batu</code>, component <code>PartnerContext.jsx</code> membaca URL slug ('batu').
+                                                Ia memanggil API <code>/api/partners/batu</code> untuk mendapatkan <code>partner_id</code> (misal: 5). ID ini disimpan di React State.
+                                            </li>
+                                            <li>
+                                                <strong>Pengiriman Data (Frontend &rarr; Backend)</strong>:
+                                                Saat submit form laporan, <code>CreateReport.jsx</code> mengambil <code>partner_id</code> (5) dari Context dan menyertakannya dalam payload POST request ke <code>/api/reports</code>.
+                                            </li>
+                                            <li>
+                                                <strong>Penyimpanan (Backend &rarr; Database)</strong>:
+                                                Controller Laravel <code>ReportController::store</code> menerima request.
+                                                <br />
+                                                <em>Code Logic:</em> <code>$report-&gt;partner_id = $request-&gt;partner_id;</code>
+                                                <br />
+                                                Data disimpan ke tabel <code>reports</code> dengan Foreign Key <code>partner_id=5</code>.
+                                                Ini memastikan laporan tersebut <strong>HANYA</strong> milik mitra Batu.
+                                            </li>
+                                        </ol>
+                                    </div>
+                                    <MermaidDiagram code={seqUserFlow} />
+                                </div>
+                            </div>
+
+                            {/* FLOW 2: PARTNER ADMIN */}
+                            <div className="border-l-4 border-emerald-500 pl-4">
+                                <h4 className="font-bold text-lg text-emerald-700 dark:text-emerald-400 mb-2">B. Partner Admin Flow (Skenario: Manajemen Data)</h4>
+                                <div className="space-y-4">
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded text-sm text-slate-700 dark:text-slate-300">
+                                        <ol className="list-decimal ml-4 space-y-2">
+                                            <li>
+                                                <strong>Authentication (Backend)</strong>:
+                                                Saat Admin login, Laravel Sanctum men-generate token yang berisi claim role <code>partner_admin</code> dan <code>partner_id</code> bawaan user tersebut.
+                                            </li>
+                                            <li>
+                                                <strong>Data Scoping (Backend Logic)</strong>:
+                                                Saat Admin membuka Dashboard, request dikirim ke <code>/api/dashboard</code>.
+                                                <br />
+                                                <em>Global Scope:</em> Backend secara otomatis mem-filter query SQL:
+                                                <code>SELECT * FROM reports WHERE partner_id = auth()-&gt;user()-&gt;partner_id</code>.
+                                                Ini menjamin Admin Mitra A <strong>TIDAK AKAN PERNAH</strong> melihat data Mitra B.
+                                            </li>
+                                            <li>
+                                                <strong>Security Middleware</strong>:
+                                                Route group di <code>api.php</code> dibungkus middleware <code>CheckPartnerOwnership</code> untuk mencegah admin mengedit resource milik mitra lain melalui manipulasi ID di URL.
+                                            </li>
+                                        </ol>
+                                    </div>
+                                    <MermaidDiagram code={seqPartnerFlow} />
+                                </div>
+                            </div>
+
+                            {/* FLOW 3: SUPER ADMIN */}
+                            <div className="border-l-4 border-slate-500 pl-4">
+                                <h4 className="font-bold text-lg text-slate-700 dark:text-slate-300 mb-2">C. Main Web Flow (Skenario: Lobby/Global Area)</h4>
+                                <div className="space-y-4">
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded text-sm text-slate-700 dark:text-slate-300">
+                                        <p className="mb-2">Saat user mengakses <code>www.solvesphere.com</code> (Tanpa /partners/...), ini dianggap sebagai "Area Global".</p>
+                                        <ol className="list-decimal ml-4 space-y-2">
+                                            <li>
+                                                <strong>Global News & Forum</strong>:
+                                                Controller (<code>NewsController</code>, <code>ForumTopicController</code>) menggunakan filter <code>whereNull('partner_id')</code>.
+                                                Artinya, hanya menampilkan berita/topik yang bersifat umum dan tidak terikat dengan kota manapun.
+                                            </li>
+                                            <li>
+                                                <strong>Global Reporting</strong>:
+                                                User bisa melapor dari halaman utama. Sistem akan mengecek:
+                                                <ul className="list-disc ml-4 mt-1">
+                                                    <li>Jika User punya <code>partner_id</code> (Warga Batu), laporan otomatis distempel "Batu".</li>
+                                                    <li>Jika User umum (Tanpa partner), laporan masuk sebagai "Laporan Global" (misal: Lapor Bug Aplikasi).</li>
+                                                </ul>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300">
+                                        <strong>Perbedaan Utama:</strong>
+                                        <ul className="list-disc ml-4 mt-1">
+                                            <li><strong>Partner Web:</strong> Filter <code>where('partner_id', $id)</code> (Wajib Lokal).</li>
+                                            <li><strong>Main Web:</strong> Filter <code>whereNull('partner_id')</code> (Wajib Global) ATAU mendeteksi asal user.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="border-l-4 border-amber-500 pl-4">
+                                <h4 className="font-bold text-lg text-amber-700 dark:text-amber-400 mb-2">C. Super Admin Flow (Skenario: Global Oversight)</h4>
+                                <div className="space-y-4">
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded text-sm text-slate-700 dark:text-slate-300">
+                                        <ol className="list-decimal ml-4 space-y-2">
+                                            <li>
+                                                <strong>God Mode Access</strong>:
+                                                Super Admin memiliki <code>partner_id = null</code> atau role spesial.
+                                                Controller untuk Super Admin (<code>SuperAdmin\SettingsController</code>) tidak menerapkan filter <code>partner_id</code>, sehingga query SQL menjadi <code>SELECT * FROM reports</code> (All Data).
+                                            </li>
+                                            <li>
+                                                <strong>System Configurations</strong>:
+                                                Perubahan settings di <code>/super-admin/settings</code> disimpan ke tabel <code>settings</code> dalam format Key-Value.
+                                                React Context <code>ThemeContext</code> atau helper function di backend membaca tabel ini untuk menerapkan konfigurasi global (misal: Maintenance Mode).
+                                            </li>
+                                        </ol>
+                                    </div>
+                                    <MermaidDiagram code={seqSuperFlow} />
+                                </div>
+                            </div>
+                        </div>
+                    </DocsSection>
+
+                    <DocsSection title="6. Penjelasan Sederhana untuk Orang Awam (Analogi Mall)" icon={Globe}>
+                        <div className="space-y-6 text-slate-600 dark:text-slate-300">
+                            <p>
+                                Jika istilah teknis seperti "Multi-Tenant", "API", atau "Database" membingungkan, bayangkan sistem SolveSphere ini seperti sebuah <strong>Mall Besar (Pusat Perbelanjaan)</strong>.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Konsep Dasar */}
+                                <div className="space-y-4">
+                                    <h4 className="font-bold text-indigo-600 dark:text-indigo-400 border-b border-indigo-100 pb-2">1. Bangunan & Penghuni</h4>
+
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                                        <strong className="block text-slate-800 dark:text-white flex items-center gap-2">
+                                            <Server className="h-4 w-4" /> Gedung Mall (Website Utama / Main Web)
+                                        </strong>
+                                        <p className="text-sm mt-1">
+                                            <code>www.solvesphere.com</code> adalah <strong>Lobby Utama / Atrium Mall</strong>.
+                                            Di sini ada papan pengumuman besar (Berita Global) yang bisa dibaca semua orang, dan Sofa tunggu (Forum Global) tempat orang dari berbagai toko bisa ngobrol santai.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                                        <strong className="block text-slate-800 dark:text-white flex items-center gap-2">
+                                            <Box className="h-4 w-4" /> Penyewa Toko (Mitra)
+                                        </strong>
+                                        <p className="text-sm mt-1">
+                                            Misal: "Diskominfo Batu" adalah Toko A, "Pemkab Malang" adalah Toko B.
+                                            Mereka menyewa ruangan di dalam Mall. Mereka bebas menghias toko mereka (Ganti Logo/Banner) dan membuat aturan sendiri, tapi tetap berada di dalam gedung yang sama.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Aktor */}
+                                <div className="space-y-4">
+                                    <h4 className="font-bold text-emerald-600 dark:text-emerald-400 border-b border-emerald-100 pb-2">2. Orang-orangnya</h4>
+
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                                        <strong className="block text-slate-800 dark:text-white flex items-center gap-2">
+                                            <Activity className="h-4 w-4" /> Pengunjung (User)
+                                        </strong>
+                                        <p className="text-sm mt-1">
+                                            Anda adalah pengunjung. Anda cukup membuat <strong>1 Kartu Member (Akun)</strong> di pintu masuk utama.
+                                            Dengan kartu itu, Anda bebas keluar masuk Toko A atau Toko B tanpa perlu daftar ulang di setiap toko.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                                        <strong className="block text-slate-800 dark:text-white flex items-center gap-2">
+                                            <Shield className="h-4 w-4" /> Manajer Toko (Partner Admin)
+                                        </strong>
+                                        <p className="text-sm mt-1">
+                                            Admin Toko A hanya punya kunci ke gudang Toko A. Dia bisa melihat kotak saran (Laporan) yang masuk ke tokonya, tapi <strong>TIDAK BISA</strong> mengintip kotak saran di Toko B. Privasi terjamin.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Skenario Cerita */}
+                            <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+                                <h4 className="font-bold text-lg text-slate-800 dark:text-white mb-3">Contoh Skenario: Melaporkan Jalan Rusak</h4>
+                                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800 space-y-3">
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[24px] font-bold text-indigo-500">1.</div>
+                                        <p className="text-sm">
+                                            Anda masuk ke Mall dan pergi ke <strong>Toko "Kota Batu"</strong> (Membuka URL: <code>/partners/batu</code>).
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[24px] font-bold text-indigo-500">2.</div>
+                                        <p className="text-sm">
+                                            Anda menulis keluhan di formulir yang disediakan toko tersebut. Ini seperti memasukkan surat ke <strong>Kotak Saran</strong> khusus toko itu.
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[24px] font-bold text-indigo-500">3.</div>
+                                        <p className="text-sm">
+                                            Pelayan Toko (Sistem/API) mengambil surat itu dan membawanya ke <strong>Gudang Arsip Pusat (Database)</strong>.
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[24px] font-bold text-indigo-500">4.</div>
+                                        <p className="text-sm">
+                                            Pelayan menempelkan label <strong>"Milik Batu"</strong> di surat itu sebelum menyimpannya di rak.
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="min-w-[24px] font-bold text-indigo-500">5.</div>
+                                        <p className="text-sm">
+                                            Saat Manajer Toko Batu datang mengecek, dia hanya akan diberikan surat-surat berlabel "Milik Batu". Surat berlabel "Milik Malang" disembunyikan darinya.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </DocsSection>
